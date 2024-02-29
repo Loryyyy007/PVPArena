@@ -1,0 +1,14 @@
+name: PVPArena
+version: '1.0'
+main: me.loryyyy.pvparene.PVPArene
+api-version: '1.20.1'
+description: a plugin that allows players to create arena in the world where to fight until death.
+author: Loryyyy
+commands:
+  arena:
+    description: create and manage PVP arenas around the world
+    usage: /arena
+    aliases: arn
+permissions:
+  arena.set:
+    description: allows a player to create and manage arenas

@@ -1,0 +1,5 @@
+General:
+  Task:
+    Delay: 10
+    Period: 10
+  Enabled: true
