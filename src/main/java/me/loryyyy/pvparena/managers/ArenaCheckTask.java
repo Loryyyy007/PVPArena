@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import me.loryyyy.pvparena.PVPArena;
 import me.loryyyy.pvparena.utils.Arena;
+import me.loryyyy.pvparena.utils.ConstantPaths;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -30,17 +32,29 @@ public class ArenaCheckTask {
 
     public void start() {
 
-        final int PERIOD = PVPArena.getInstance().getConfig().getInt("General.Task.Period");
-        final int DELAY = PVPArena.getInstance().getConfig().getInt("General.Task.Delay");
+        final int PERIOD = PVPArena.getInstance().getConfig().getInt(ConstantPaths.ARENA_TASK_PERIOD);
+        final int DELAY = PVPArena.getInstance().getConfig().getInt(ConstantPaths.ARENA_TASK_DELAY);
 
         task = new BukkitRunnable() {
             @Override
             public void run() {
                 for(Player p : Bukkit.getOnlinePlayers()){
+                    Location pLoc = p.getLocation();
                     if(!playersInArena.containsKey(p)){
-
+                        for(Arena arena : Arena.getEnabledArenas().values()){
+                            if(arena.contains(pLoc)){
+                                arena.onJoin(p);
+                                playersInArena.put(p, arena);
+                                break;
+                            }
+                        }
                     }else{
-
+                        Arena arena = playersInArena.get(p);
+                        if(!arena.contains(pLoc)){
+                            arena.onLeave(p);
+                            playersInArena.remove(p);
+                            break;
+                        }
                     }
                 }
             }

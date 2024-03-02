@@ -2,13 +2,14 @@ package me.loryyyy.pvparena.commands;
 
 import lombok.Getter;
 import me.loryyyy.pvparena.PVPArena;
+import me.loryyyy.pvparena.files.Messages;
 import me.loryyyy.pvparena.files.Setting;
 import me.loryyyy.pvparena.managers.ArenaCheckTask;
 import me.loryyyy.pvparena.utils.Arena;
+import me.loryyyy.pvparena.utils.ConstantPaths;
 import me.loryyyy.pvparena.utils.Region;
 import me.loryyyy.pvparena.utils.UM;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -31,6 +32,9 @@ public class ArenaCommand implements TabExecutor {
         if (sender instanceof Player p) {
 
             final int L = args.length;
+            Setting setting = Setting.getInstance();
+            FileConfiguration setConfig = setting.getConfig();
+            FileConfiguration config = PVPArena.getInstance().getConfig();
 
             if (L == 0) {
 
@@ -44,85 +48,87 @@ public class ArenaCommand implements TabExecutor {
             } else if (L == 1) {
 
                 switch (args[0].toLowerCase()) {
-                    case "wand":
-                        ItemStack wand = UM.getInstance().createItem(Material.IRON_AXE, ChatColor.GOLD + "Arena Wand", Arrays.asList(" ", ChatColor.YELLOW + "Break a block to set pos1", ChatColor.YELLOW + "Right-click a block to set pos2"), 1);
+                    case "wand" -> {
+                        ItemStack wand = UM.getInstance().createItem(Material.IRON_AXE, ChatColor.GOLD + "Arena Wand", Arrays.asList(" ", ChatColor.YELLOW + "Left-click a block to set pos1", ChatColor.YELLOW + "Right-click a block to set pos2"), 1);
                         wand.addEnchantment(Enchantment.DURABILITY, 1);
                         p.getInventory().addItem(wand);
                         p.sendMessage(ChatColor.GOLD + "Arena Wand " + ChatColor.GREEN + "has been added to your inventory.");
-                        break;
-                    case "usage":
+                    }
+                    case "usage" -> {
                         showUsage(p);
-                        break;
-                    case "info":
-                        List<String> created = Setting.getInstance().getCreatedArenas();
-                        FileConfiguration config = Setting.getInstance().getConfig();
+                    }
+                    case "reload" -> {
+                        PVPArena.getInstance().onDisable();
+                        PVPArena.getInstance().onEnable();
+                        p.sendMessage(ChatColor.GREEN + "The plugin was reloaded.");
+                        //TODO actually reload
+                    }
+                    case "confreload" -> {
+                        Setting.getInstance().reloadConfig();
+                        Messages.getInstance().reloadConfig();
+                        PVPArena.getInstance().reloadConfig();
+                        p.sendMessage(ChatColor.GREEN + "All config files where reloaded.");
+                    }
+                    case "info" -> {
+                        List<String> created = setting.getCreatedArenas();
                         p.sendMessage(ChatColor.LIGHT_PURPLE + "==================================");
                         p.sendMessage(ChatColor.AQUA + "Total number of arenas: " + ChatColor.GOLD + created.size());
                         p.sendMessage(" ");
                         for (String arena : created) {
-                            Location corner1 = config.getLocation("Arenas." + arena + ".Corner 1");
-                            Location corner2 = config.getLocation("Arenas." + arena + ".Corner 2");
-                            boolean enabled = config.getBoolean("Arenas." + arena + ".Enabled");
-                            if (corner1 == null || corner2 == null) continue;
-
-                            p.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + arena);
-                            p.sendMessage(ChatColor.AQUA + "Corner 1: " + ChatColor.GOLD + UM.getInstance().locToString(corner1));
-                            p.sendMessage(ChatColor.AQUA + "Corner 1: " + ChatColor.GOLD + UM.getInstance().locToString(corner2));
-                            p.sendMessage(ChatColor.AQUA + "Enabled: " + ChatColor.GOLD + enabled);
+                            setting.sendInfoOfArena(p, arena);
                             p.sendMessage(" ");
                         }
                         p.sendMessage(ChatColor.LIGHT_PURPLE + "==================================");
-                        break;
-                    case "disable":
-                        if(!ArenaCheckTask.getInstance().isTaskEnabled()){
+                    }
+                    case "disable" -> {
+                        if (!ArenaCheckTask.getInstance().isTaskEnabled()) {
                             p.sendMessage(ChatColor.GOLD + "The arena check task is already disabled.");
                             return true;
                         }
                         ArenaCheckTask.getInstance().setTaskEnabled(false);
-                        PVPArena.getInstance().getConfig().set("General.Enabled", false);
+                        config.set(ConstantPaths.TASK_ENABLED, false);
                         PVPArena.getInstance().saveConfig();
 
                         ArenaCheckTask.getInstance().cancel();
                         ArenaCheckTask.getInstance().getPlayersInArena().clear();
                         p.sendMessage(ChatColor.GREEN + "Arena check task was " + ChatColor.GOLD + "disabled.");
-                        break;
-                    case "enable":
-                        if(ArenaCheckTask.getInstance().isTaskEnabled()){
+                    }
+                    case "enable" -> {
+                        if (ArenaCheckTask.getInstance().isTaskEnabled()) {
                             p.sendMessage(ChatColor.GOLD + "The arena check task is already enabled.");
                             return true;
                         }
                         ArenaCheckTask.getInstance().setTaskEnabled(true);
-                        PVPArena.getInstance().getConfig().set("General.Enabled", true);
+                        config.set(ConstantPaths.TASK_ENABLED, true);
                         PVPArena.getInstance().saveConfig();
 
                         ArenaCheckTask.getInstance().start();
                         p.sendMessage(ChatColor.GREEN + "Arena check task was " + ChatColor.GOLD + "enabled.");
-                        break;
-                    case "pos1":
-                    case "pos2":
+                    }
+                    case "pos1", "pos2" -> {
                         selectedRegions.putIfAbsent(p, new Region());
                         Region region = selectedRegions.get(p);
 
-                        if(args[0].equalsIgnoreCase("pos1"))
+                        if (args[0].equalsIgnoreCase("pos1"))
                             region.setCorner1(p.getLocation().getBlock().getLocation());
                         else region.setCorner2(p.getLocation().getBlock().getLocation());
 
                         region.updateVisualEffect(p);
 
                         p.sendMessage(ChatColor.GREEN + UM.getInstance().capitalize(args[0].toLowerCase()) + " of the region was set to your location.");
-                    default:
+                    }
+                    default -> {
                         p.sendMessage(ChatColor.RED + "Unknown argument: " + args[0]);
                         showUsage(p);
-                        break;
+                    }
                 }
 
             } else if (L == 2) {
 
                 String arenaName = args[1];
-                FileConfiguration config = Setting.getInstance().getConfig();
 
                 switch (args[0].toLowerCase()) {
-                    case "save":
+                    case "save" -> {
                         if (!selectedRegions.containsKey(p)) {
                             p.sendMessage(ChatColor.GOLD + "Before saving the arena you need to select a region with the Arena Wand.");
                             return true;
@@ -132,7 +138,7 @@ public class ArenaCommand implements TabExecutor {
                             p.sendMessage(ChatColor.GOLD + "Before saving the arena you need to set both corners of the region with the Arena Wand.");
                             return true;
                         }
-                        boolean isNew = Setting.getInstance().addArena(arenaName, region);
+                        boolean isNew = setting.addArena(arenaName, region);
 
                         p.sendMessage(ChatColor.YELLOW + "-------------------------------------");
                         if (isNew) {
@@ -145,10 +151,10 @@ public class ArenaCommand implements TabExecutor {
                         p.sendMessage(ChatColor.AQUA + "Enabled: " + ChatColor.GOLD + "true");
                         p.sendMessage(ChatColor.YELLOW + "-------------------------------------");
 
-                        break;
-                    case "delete":
+                    }
+                    case "delete" -> {
 
-                        boolean exists = Setting.getInstance().deleteArena(arenaName);
+                        boolean exists = setting.deleteArena(arenaName);
 
                         if (exists) {
                             p.sendMessage(ChatColor.GREEN + "You deleted arena: " + ChatColor.GOLD + arenaName);
@@ -156,63 +162,50 @@ public class ArenaCommand implements TabExecutor {
                             p.sendMessage(ChatColor.GOLD + "No arena with this name was found.");
                         }
 
-                        break;
-                    case "info":
+                    }
+                    case "info" -> {
 
-                        if (!Setting.getInstance().arenaExists(arenaName)) {
+                        if (!setting.arenaExists(arenaName)) {
                             p.sendMessage(ChatColor.RED + "No arena found with this name.");
                             return true;
                         }
 
                         p.sendMessage(ChatColor.LIGHT_PURPLE + "==================================");
 
-                        Location corner1 = config.getLocation("Arenas." + arenaName + ".Corner 1");
-                        Location corner2 = config.getLocation("Arenas." + arenaName + ".Corner 2");
-                        boolean enabled = config.getBoolean("Arenas." + arenaName + ".Enabled");
-
-                        p.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + arenaName);
-                        p.sendMessage(ChatColor.AQUA + "Corner 1: " + ChatColor.GOLD + UM.getInstance().locToString(corner1));
-                        p.sendMessage(ChatColor.AQUA + "Corner 1: " + ChatColor.GOLD + UM.getInstance().locToString(corner2));
-                        p.sendMessage(ChatColor.AQUA + "Enabled: " + ChatColor.GOLD + enabled);
+                        setting.sendInfoOfArena(p, arenaName);
 
                         p.sendMessage(ChatColor.LIGHT_PURPLE + "==================================");
-                        break;
-                    case "disable":
-                        if (!Setting.getInstance().arenaExists(arenaName)) {
+                    }
+                    case "disable" -> {
+                        if (!setting.arenaExists(arenaName)) {
                             p.sendMessage(ChatColor.RED + "No arena found with this name.");
                             return true;
                         }
-                        if(!config.getBoolean("Arenas." + arenaName + ".Enabled")){
+                        if (!setConfig.getBoolean(ConstantPaths.ARENA_SETTING + arenaName + ConstantPaths.ARENA_ENABLED)) {
                             p.sendMessage(ChatColor.GOLD + "This arena is already disabled.");
                             return true;
                         }
-                        config.set("Arenas." + arenaName + ".Enabled", false);
-                        Setting.getInstance().saveConfig();
-                        Arena.getEnabledArenas().remove(arenaName);
+                        setting.disableArena(arenaName);
 
                         p.sendMessage(ChatColor.GREEN + "Arena " + arenaName + " was " + ChatColor.GOLD + "disabled.");
-                        break;
-                    case "enable":
-                        if (!Setting.getInstance().arenaExists(arenaName)) {
+                    }
+                    case "enable" -> {
+                        if (!setting.arenaExists(arenaName)) {
                             p.sendMessage(ChatColor.RED + "No arena found with this name.");
                             return true;
                         }
-                        if(config.getBoolean("Arenas." + arenaName + ".Enabled")){
+                        if (setConfig.getBoolean(ConstantPaths.ARENA_SETTING + arenaName + ConstantPaths.ARENA_ENABLED)) {
                             p.sendMessage(ChatColor.GOLD + "This arena is already enabled.");
                             return true;
                         }
-                        config.set("Arenas." + arenaName + ".Enabled", true);
-                        Setting.getInstance().saveConfig();
-
-                        Arena arena = new Arena(arenaName);
-                        Arena.getEnabledArenas().put(arenaName, arena);
+                        setting.enableArena(arenaName);
 
                         p.sendMessage(ChatColor.GREEN + "Arena " + arenaName + " was " + ChatColor.GOLD + "enabled.");
-                        break;
-                    default:
+                    }
+                    default -> {
                         p.sendMessage(ChatColor.RED + "Unknown argument: " + args[0]);
                         showUsage(p);
-                        break;
+                    }
                 }
 
             } else if (L == 3) {
@@ -221,9 +214,9 @@ public class ArenaCommand implements TabExecutor {
                 String newArenaName = args[2];
 
                 switch (args[0].toLowerCase()) {
-                    case "changename":
+                    case "changename" -> {
 
-                        List<String> created = Setting.getInstance().getCreatedArenas();
+                        List<String> created = setting.getCreatedArenas();
                         if (!created.contains(oldArenaName)) {
                             p.sendMessage(ChatColor.RED + "No arena found with this name.");
                             return true;
@@ -232,18 +225,18 @@ public class ArenaCommand implements TabExecutor {
                             p.sendMessage(ChatColor.RED + "An arena with this name already exists.");
                             return true;
                         }
-                        Setting.getInstance().changeArenaName(oldArenaName, newArenaName);
+                        setting.changeArenaName(oldArenaName, newArenaName);
 
                         p.sendMessage(ChatColor.GOLD + oldArenaName + " arena" + ChatColor.GREEN + " was renamed to " + ChatColor.GOLD + newArenaName);
-
-                        break;
-                    default:
+                    }
+                    default -> {
                         p.sendMessage(ChatColor.RED + "Unknown argument: " + args[0]);
                         showUsage(p);
-                        break;
+                    }
                 }
 
             } else showUsage(p);
+
 
         } else {
             PVPArena.getInstance().getLogger().warning("This command can be executed only by players.");
@@ -271,6 +264,8 @@ public class ArenaCommand implements TabExecutor {
                 l.add("info");
                 l.add("pos1");
                 l.add("pos2");
+                l.add("confReload");
+                l.add("reload");
 
             } else if (L == 2) {
 
@@ -282,13 +277,13 @@ public class ArenaCommand implements TabExecutor {
                     case "changename", "delete", "info" -> l.addAll(createdArenas);
                     case "enable" -> {
                         for (String arena : createdArenas) {
-                            if (!Setting.getInstance().getConfig().getBoolean("Arenas." + arena + ".Enabled"))
+                            if (!Setting.getInstance().getConfig().getBoolean(ConstantPaths.ARENA_SETTING + arena + ConstantPaths.ARENA_ENABLED))
                                 l.add(arena);
                         }
                     }
                     case "disable" -> {
                         for (String arena : createdArenas) {
-                            if (Setting.getInstance().getConfig().getBoolean("Arenas." + arena + ".Enabled"))
+                            if (Setting.getInstance().getConfig().getBoolean(ConstantPaths.ARENA_SETTING + arena + ConstantPaths.ARENA_ENABLED))
                                 l.add(arena);
                         }
                     }
@@ -321,6 +316,8 @@ public class ArenaCommand implements TabExecutor {
         um.sendUsageOfCommand("/arena info <arenaName>", "shows some info of a certain arena.", p);
         um.sendUsageOfCommand("/arena pos1", "sets pos1 to your current location.", p);
         um.sendUsageOfCommand("/arena pos2", "sets pos2 to your current location.", p);
+        um.sendUsageOfCommand("/arena confReload", "reloads all configs.", p);
+        um.sendUsageOfCommand("/arena reload", "reloads the plugin.", p);
 
         p.sendMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
     }

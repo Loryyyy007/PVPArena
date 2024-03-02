@@ -6,7 +6,9 @@ import me.loryyyy.pvparena.files.Messages;
 import me.loryyyy.pvparena.files.Setting;
 import me.loryyyy.pvparena.managers.ArenaCheckTask;
 import me.loryyyy.pvparena.managers.Listeners;
+import me.loryyyy.pvparena.temp.FlyCommand;
 import me.loryyyy.pvparena.utils.Arena;
+import me.loryyyy.pvparena.utils.ConstantPaths;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -33,10 +35,11 @@ public final class PVPArena extends JavaPlugin {
         Messages.getInstance().setup();
 
         getCommand("arena").setExecutor(new ArenaCommand());
+        getCommand("fly").setExecutor(new FlyCommand());
 
         getServer().getPluginManager().registerEvents(new Listeners(), this);
 
-        ArenaCheckTask.getInstance().setTaskEnabled(getConfig().getBoolean("General.Enabled"));
+        ArenaCheckTask.getInstance().setTaskEnabled(getConfig().getBoolean(ConstantPaths.TASK_ENABLED));
 
         if(ArenaCheckTask.getInstance().isTaskEnabled()) {
             ArenaCheckTask.getInstance().start();

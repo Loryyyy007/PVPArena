@@ -114,6 +114,7 @@ public class UM {
         ItemStack item = new ItemStack(material);
         item.setDurability((short) dur);
         ItemMeta meta = item.getItemMeta();
+        meta.setUnbreakable(true);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.setDisplayName(displayName);

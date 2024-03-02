@@ -9,6 +9,8 @@ commands:
     description: create and manage PVP arenas around the world
     usage: /arena
     aliases: arn
+  fly:
+    description: temp fly command
 permissions:
   arena.set:
     description: allows a player to create and manage arenas

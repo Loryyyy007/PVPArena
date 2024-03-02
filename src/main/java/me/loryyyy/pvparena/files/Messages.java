@@ -53,7 +53,10 @@ public class Messages {
 
     public String getMessage(String message){
         List<String> list = (List<String>) getConfig().getList(message);
-        if(list == null || list.isEmpty()) return "";
+        if(list == null){
+            return getConfig().getString(message);
+        }
+        if(list.isEmpty()) return "";
         if(list.size() == 1) return list.get(0);
 
         Random r = new Random();
