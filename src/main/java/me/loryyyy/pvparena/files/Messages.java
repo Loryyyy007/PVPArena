@@ -1,29 +1,33 @@
-package me.loryyyy.pvparene.files;
+package me.loryyyy.pvparena.files;
 
-import me.loryyyy.pvparene.PVPArena;
+import lombok.Getter;
+import me.loryyyy.pvparena.PVPArena;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Random;
 
-public class Setting {
+public class Messages {
 
-    private static final Setting instance = new Setting();
+    @Getter
+    private static final Messages instance = new Messages();
 
-    private Setting() {
+    private Messages() {
     }
 
     private File file;
     private FileConfiguration configuration;
 
     public void setup() {
-        file = new File(PVPArena.getInstance().getDataFolder() + "/saves", "Setting.yml");
+        file = new File(PVPArena.getInstance().getDataFolder(), "Messages.yml");
         if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                PVPArena.getInstance().getLogger().severe("Failed to create the Setting.yml file.");
+                PVPArena.getInstance().getLogger().severe("Failed to create the Messages.yml file.");
                 throw new RuntimeException(e);
             }
         }
@@ -35,7 +39,7 @@ public class Setting {
         try {
             configuration.save(file);
         } catch (IOException e) {
-            PVPArena.getInstance().getLogger().severe("Failed to save the Setting.yml file.");
+            PVPArena.getInstance().getLogger().severe("Failed to save the Messages.yml file.");
         }
     }
 
@@ -47,8 +51,14 @@ public class Setting {
         return configuration;
     }
 
-    public static Setting getInstance() {
-        return instance;
+    public String getMessage(String message){
+        List<String> list = (List<String>) getConfig().getList(message);
+        if(list == null || list.isEmpty()) return "";
+        if(list.size() == 1) return list.get(0);
+
+        Random r = new Random();
+        int n = r.nextInt(list.size());
+        return list.get(n);
     }
 
 }

@@ -1,7 +1,9 @@
-package me.loryyyy.pvparene.managers;
+package me.loryyyy.pvparena.managers;
 
 import lombok.Getter;
-import me.loryyyy.pvparene.PVPArena;
+import lombok.Setter;
+import me.loryyyy.pvparena.PVPArena;
+import me.loryyyy.pvparena.utils.Arena;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -16,7 +18,11 @@ public class ArenaCheckTask {
     private final static ArenaCheckTask instance = new ArenaCheckTask();
 
     @Getter
-    private final Map<Player, String> playersInArena = new HashMap<>();
+    private final Map<Player, Arena> playersInArena = new HashMap<>();
+
+    @Getter
+    @Setter
+    private boolean taskEnabled;
     private BukkitTask task = null;
 
     private ArenaCheckTask() {
