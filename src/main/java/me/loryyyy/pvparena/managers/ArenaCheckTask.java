@@ -64,6 +64,7 @@ public class ArenaCheckTask {
     public void cancel() {
         if (task == null) return;
         task.cancel();
+        task = null;
     }
 
 }

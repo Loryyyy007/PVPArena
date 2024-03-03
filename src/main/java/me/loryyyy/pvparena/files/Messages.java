@@ -2,8 +2,11 @@ package me.loryyyy.pvparena.files;
 
 import lombok.Getter;
 import me.loryyyy.pvparena.PVPArena;
+import me.loryyyy.pvparena.utils.ConstantPaths;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +36,7 @@ public class Messages {
         }
         configuration = YamlConfiguration.loadConfiguration(file);
         saveConfig();
+        if(configuration.getKeys(false).isEmpty()) setDefaultValues();
     }
 
     public void saveConfig() {
@@ -62,6 +66,22 @@ public class Messages {
         Random r = new Random();
         int n = r.nextInt(list.size());
         return list.get(n);
+    }
+
+    private void setDefaultValues(){
+
+        getConfig().set(ConstantPaths.ARENA_JOIN_MESSAGE, "&3<player> &ahas joined &6<arena>.");
+        getConfig().set(ConstantPaths.ARENA_LEAVE_MESSAGE, "&3<player> &ahas left &6<arena>.");
+        getConfig().set(ConstantPaths.NO_PERMISSION_MESSAGE, "&cYou don't have the required permission to execute this command.");
+        getConfig().set(ConstantPaths.ARENA_WHERE_MESSAGE, "&aYou are currently in &6<arena> arena.");
+        getConfig().set(ConstantPaths.NOT_IN_ARENA_MESSAGE, "&cYou are not in an arena.");
+        getConfig().set(ConstantPaths.ARENA_DEATH_MESSAGE, "&6<victim> &chas been killed by &4<killer>.");
+        saveConfig();
+
+    }
+    public boolean sendNoPermMessage(Player p){
+        p.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessage(ConstantPaths.NO_PERMISSION_MESSAGE)));
+        return true;
     }
 
 }

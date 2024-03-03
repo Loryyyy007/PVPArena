@@ -13,13 +13,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Setting {
 
@@ -72,7 +68,7 @@ public class Setting {
 
         if(isNew) UM.getInstance().addToCommaList(getConfig(), ConstantPaths.CREATED_ARENAS, arenaName);
 
-        getConfig().set(ConstantPaths.ARENA_SETTING + arenaName + ConstantPaths.ARENA_ENABLED, true);
+        getConfig().set(ConstantPaths.ARENA_SETTING + arenaName + ConstantPaths.ARENA_ENABLED, PVPArena.getInstance().getConfig().getBoolean(ConstantPaths.ARENA_CREATION_ENABLED));
         getConfig().set(ConstantPaths.ARENA_SETTING + arenaName + ConstantPaths.ARENA_CORNER1, region.getCorner1());
         getConfig().set(ConstantPaths.ARENA_SETTING + arenaName + ConstantPaths.ARENA_CORNER2, region.getCorner2());
         saveConfig();

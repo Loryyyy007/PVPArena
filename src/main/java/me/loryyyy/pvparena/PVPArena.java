@@ -6,7 +6,6 @@ import me.loryyyy.pvparena.files.Messages;
 import me.loryyyy.pvparena.files.Setting;
 import me.loryyyy.pvparena.managers.ArenaCheckTask;
 import me.loryyyy.pvparena.managers.Listeners;
-import me.loryyyy.pvparena.temp.FlyCommand;
 import me.loryyyy.pvparena.utils.Arena;
 import me.loryyyy.pvparena.utils.ConstantPaths;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,27 +26,24 @@ public final class PVPArena extends JavaPlugin {
         reloadConfig();
 
         File file = new File(getDataFolder() + "/saves");
-        if(!file.mkdir()){
-            getLogger().severe("Failed to create directory /saves.");
-        }
+        file.mkdir();
 
         Setting.getInstance().setup();
         Messages.getInstance().setup();
 
         getCommand("arena").setExecutor(new ArenaCommand());
-        getCommand("fly").setExecutor(new FlyCommand());
 
         getServer().getPluginManager().registerEvents(new Listeners(), this);
 
         ArenaCheckTask.getInstance().setTaskEnabled(getConfig().getBoolean(ConstantPaths.TASK_ENABLED));
 
-        if(ArenaCheckTask.getInstance().isTaskEnabled()) {
+        if (ArenaCheckTask.getInstance().isTaskEnabled()) {
             ArenaCheckTask.getInstance().start();
         }
 
-        for(String arenaName : Setting.getInstance().getCreatedArenas()){
+        for (String arenaName : Setting.getInstance().getCreatedArenas()) {
             Arena arena = new Arena(arenaName);
-            if(arena.isEnabled()) Arena.getEnabledArenas().put(arenaName, arena);
+            if (arena.isEnabled()) Arena.getEnabledArenas().put(arenaName, arena);
         }
 
         getLogger().info("PVPArena plugin has loaded successfully!");
@@ -58,7 +54,15 @@ public final class PVPArena extends JavaPlugin {
     public void onDisable() {
 
         ArenaCheckTask.getInstance().cancel();
+        ArenaCommand.getSelectedRegions().clear();
+        ArenaCheckTask.getInstance().getPlayersInArena().clear();
+        Arena.getEnabledArenas().clear();
 
+    }
+
+    public void reload() {
+        getServer().getPluginManager().disablePlugin(this);
+        getServer().getPluginManager().enablePlugin(this);
     }
 
 }

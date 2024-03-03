@@ -10,6 +10,7 @@ import me.loryyyy.pvparena.utils.ConstantPaths;
 import me.loryyyy.pvparena.utils.Region;
 import me.loryyyy.pvparena.utils.UM;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -31,6 +32,8 @@ public class ArenaCommand implements TabExecutor {
 
         if (sender instanceof Player p) {
 
+            if(hasNoPerm(p)) return Messages.getInstance().sendNoPermMessage(p);
+
             final int L = args.length;
             Setting setting = Setting.getInstance();
             FileConfiguration setConfig = setting.getConfig();
@@ -38,38 +41,48 @@ public class ArenaCommand implements TabExecutor {
 
             if (L == 0) {
 
+                if(!p.hasPermission("arena.which")) return Messages.getInstance().sendNoPermMessage(p);
+
                 Map<Player, Arena> playersInArena = ArenaCheckTask.getInstance().getPlayersInArena();
+                String message;
                 if (playersInArena.containsKey(p)) {
-                    p.sendMessage(ChatColor.GREEN + "You are currently in " + ChatColor.GOLD + playersInArena.get(p).getName() + " arena.");
+                    message = Messages.getInstance().getMessage(ConstantPaths.ARENA_WHERE_MESSAGE).replace("<arena>", playersInArena.get(p).getName());
                 } else {
-                    p.sendMessage(ChatColor.RED + "You are not in an arena.");
+                    message = Messages.getInstance().getMessage(ConstantPaths.NOT_IN_ARENA_MESSAGE);
                 }
+                p.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
 
             } else if (L == 1) {
 
                 switch (args[0].toLowerCase()) {
-                    case "wand" -> {
+                    case "wand", "w" -> {
+                        if(!p.hasPermission("arena.set")) return Messages.getInstance().sendNoPermMessage(p);
+
                         ItemStack wand = UM.getInstance().createItem(Material.IRON_AXE, ChatColor.GOLD + "Arena Wand", Arrays.asList(" ", ChatColor.YELLOW + "Left-click a block to set pos1", ChatColor.YELLOW + "Right-click a block to set pos2"), 1);
                         wand.addEnchantment(Enchantment.DURABILITY, 1);
                         p.getInventory().addItem(wand);
                         p.sendMessage(ChatColor.GOLD + "Arena Wand " + ChatColor.GREEN + "has been added to your inventory.");
                     }
-                    case "usage" -> {
+                    case "usage", "us" -> {
                         showUsage(p);
                     }
-                    case "reload" -> {
-                        PVPArena.getInstance().onDisable();
-                        PVPArena.getInstance().onEnable();
+                    case "reload", "rl" -> {
+                        if(!p.hasPermission("arena.reload")) return Messages.getInstance().sendNoPermMessage(p);
+
+                        PVPArena.getInstance().reload();
                         p.sendMessage(ChatColor.GREEN + "The plugin was reloaded.");
-                        //TODO actually reload
                     }
-                    case "confreload" -> {
+                    case "confreload", "cfrl" -> {
+                        if(!p.hasPermission("arena.configs-reload")) return Messages.getInstance().sendNoPermMessage(p);
+
                         Setting.getInstance().reloadConfig();
                         Messages.getInstance().reloadConfig();
                         PVPArena.getInstance().reloadConfig();
-                        p.sendMessage(ChatColor.GREEN + "All config files where reloaded.");
+                        p.sendMessage(ChatColor.GREEN + "All config files were reloaded.");
                     }
-                    case "info" -> {
+                    case "info", "i" -> {
+                        if(!p.hasPermission("arena.info")) return Messages.getInstance().sendNoPermMessage(p);
+
                         List<String> created = setting.getCreatedArenas();
                         p.sendMessage(ChatColor.LIGHT_PURPLE + "==================================");
                         p.sendMessage(ChatColor.AQUA + "Total number of arenas: " + ChatColor.GOLD + created.size());
@@ -80,7 +93,9 @@ public class ArenaCommand implements TabExecutor {
                         }
                         p.sendMessage(ChatColor.LIGHT_PURPLE + "==================================");
                     }
-                    case "disable" -> {
+                    case "disable", "dis" -> {
+                        if(!p.hasPermission("arena.enable")) return Messages.getInstance().sendNoPermMessage(p);
+
                         if (!ArenaCheckTask.getInstance().isTaskEnabled()) {
                             p.sendMessage(ChatColor.GOLD + "The arena check task is already disabled.");
                             return true;
@@ -91,9 +106,11 @@ public class ArenaCommand implements TabExecutor {
 
                         ArenaCheckTask.getInstance().cancel();
                         ArenaCheckTask.getInstance().getPlayersInArena().clear();
-                        p.sendMessage(ChatColor.GREEN + "Arena check task was " + ChatColor.GOLD + "disabled.");
+                        p.sendMessage(ChatColor.GOLD + "Arena check task was disabled.");
                     }
-                    case "enable" -> {
+                    case "enable", "en" -> {
+                        if(!p.hasPermission("arena.enable")) return Messages.getInstance().sendNoPermMessage(p);
+
                         if (ArenaCheckTask.getInstance().isTaskEnabled()) {
                             p.sendMessage(ChatColor.GOLD + "The arena check task is already enabled.");
                             return true;
@@ -103,19 +120,23 @@ public class ArenaCommand implements TabExecutor {
                         PVPArena.getInstance().saveConfig();
 
                         ArenaCheckTask.getInstance().start();
-                        p.sendMessage(ChatColor.GREEN + "Arena check task was " + ChatColor.GOLD + "enabled.");
+                        p.sendMessage(ChatColor.GREEN + "Arena check task was enabled.");
                     }
                     case "pos1", "pos2" -> {
+                        if(!p.hasPermission("arena.set")) return Messages.getInstance().sendNoPermMessage(p);
+
                         selectedRegions.putIfAbsent(p, new Region());
                         Region region = selectedRegions.get(p);
 
+                        Location blockLoc = p.getLocation().getBlock().getLocation();
+
                         if (args[0].equalsIgnoreCase("pos1"))
-                            region.setCorner1(p.getLocation().getBlock().getLocation());
-                        else region.setCorner2(p.getLocation().getBlock().getLocation());
+                            region.setCorner1(blockLoc);
+                        else region.setCorner2(blockLoc);
 
                         region.updateVisualEffect(p);
 
-                        p.sendMessage(ChatColor.GREEN + UM.getInstance().capitalize(args[0].toLowerCase()) + " of the region was set to your location.");
+                        p.sendMessage(ChatColor.GREEN + UM.getInstance().capitalize(args[0].toLowerCase()) + " of the region was set to: " + ChatColor.GOLD + UM.getInstance().locToString(blockLoc));
                     }
                     default -> {
                         p.sendMessage(ChatColor.RED + "Unknown argument: " + args[0]);
@@ -128,7 +149,9 @@ public class ArenaCommand implements TabExecutor {
                 String arenaName = args[1];
 
                 switch (args[0].toLowerCase()) {
-                    case "save" -> {
+                    case "save", "sv" -> {
+                        if(!p.hasPermission("arena.set")) return Messages.getInstance().sendNoPermMessage(p);
+
                         if (!selectedRegions.containsKey(p)) {
                             p.sendMessage(ChatColor.GOLD + "Before saving the arena you need to select a region with the Arena Wand.");
                             return true;
@@ -138,6 +161,7 @@ public class ArenaCommand implements TabExecutor {
                             p.sendMessage(ChatColor.GOLD + "Before saving the arena you need to set both corners of the region with the Arena Wand.");
                             return true;
                         }
+
                         boolean isNew = setting.addArena(arenaName, region);
 
                         p.sendMessage(ChatColor.YELLOW + "-------------------------------------");
@@ -148,25 +172,27 @@ public class ArenaCommand implements TabExecutor {
                         }
                         p.sendMessage(ChatColor.AQUA + "Corner 1: " + ChatColor.GOLD + UM.getInstance().locToString(region.getCorner1()));
                         p.sendMessage(ChatColor.AQUA + "Corner 2: " + ChatColor.GOLD + UM.getInstance().locToString(region.getCorner2()));
-                        p.sendMessage(ChatColor.AQUA + "Enabled: " + ChatColor.GOLD + "true");
+                        p.sendMessage(ChatColor.AQUA + "Enabled: " + ChatColor.GOLD + config.getBoolean(ConstantPaths.ARENA_CREATION_ENABLED));
                         p.sendMessage(ChatColor.YELLOW + "-------------------------------------");
 
                     }
-                    case "delete" -> {
+                    case "delete", "del" -> {
+                        if(!p.hasPermission("arena.set")) return Messages.getInstance().sendNoPermMessage(p);
 
                         boolean exists = setting.deleteArena(arenaName);
 
                         if (exists) {
                             p.sendMessage(ChatColor.GREEN + "You deleted arena: " + ChatColor.GOLD + arenaName);
                         } else {
-                            p.sendMessage(ChatColor.GOLD + "No arena with this name was found.");
+                            p.sendMessage(ChatColor.GOLD + "No arena with this name found.");
                         }
 
                     }
-                    case "info" -> {
+                    case "info", "i" -> {
+                        if(!p.hasPermission("arena.info")) return Messages.getInstance().sendNoPermMessage(p);
 
                         if (!setting.arenaExists(arenaName)) {
-                            p.sendMessage(ChatColor.RED + "No arena found with this name.");
+                            p.sendMessage(ChatColor.RED + "No arena with this name found.");
                             return true;
                         }
 
@@ -176,9 +202,11 @@ public class ArenaCommand implements TabExecutor {
 
                         p.sendMessage(ChatColor.LIGHT_PURPLE + "==================================");
                     }
-                    case "disable" -> {
+                    case "disable", "dis" -> {
+                        if(!p.hasPermission("arena.enable")) return Messages.getInstance().sendNoPermMessage(p);
+
                         if (!setting.arenaExists(arenaName)) {
-                            p.sendMessage(ChatColor.RED + "No arena found with this name.");
+                            p.sendMessage(ChatColor.RED + "No arena with this name found.");
                             return true;
                         }
                         if (!setConfig.getBoolean(ConstantPaths.ARENA_SETTING + arenaName + ConstantPaths.ARENA_ENABLED)) {
@@ -187,9 +215,11 @@ public class ArenaCommand implements TabExecutor {
                         }
                         setting.disableArena(arenaName);
 
-                        p.sendMessage(ChatColor.GREEN + "Arena " + arenaName + " was " + ChatColor.GOLD + "disabled.");
+                        p.sendMessage(ChatColor.GREEN + "Arena " + ChatColor.GOLD + arenaName + ChatColor.GREEN + " was disabled.");
                     }
-                    case "enable" -> {
+                    case "enable", "en" -> {
+                        if(!p.hasPermission("arena.enable")) return Messages.getInstance().sendNoPermMessage(p);
+
                         if (!setting.arenaExists(arenaName)) {
                             p.sendMessage(ChatColor.RED + "No arena found with this name.");
                             return true;
@@ -200,7 +230,7 @@ public class ArenaCommand implements TabExecutor {
                         }
                         setting.enableArena(arenaName);
 
-                        p.sendMessage(ChatColor.GREEN + "Arena " + arenaName + " was " + ChatColor.GOLD + "enabled.");
+                        p.sendMessage(ChatColor.GREEN + "Arena " + ChatColor.GOLD + arenaName + ChatColor.GREEN + " was enabled.");
                     }
                     default -> {
                         p.sendMessage(ChatColor.RED + "Unknown argument: " + args[0]);
@@ -214,14 +244,14 @@ public class ArenaCommand implements TabExecutor {
                 String newArenaName = args[2];
 
                 switch (args[0].toLowerCase()) {
-                    case "changename" -> {
+                    case "changename", "chn" -> {
+                        if(!p.hasPermission("arena.set")) return Messages.getInstance().sendNoPermMessage(p);
 
-                        List<String> created = setting.getCreatedArenas();
-                        if (!created.contains(oldArenaName)) {
-                            p.sendMessage(ChatColor.RED + "No arena found with this name.");
+                        if (!setting.arenaExists(oldArenaName)) {
+                            p.sendMessage(ChatColor.RED + "No arena with this name found.");
                             return true;
                         }
-                        if (created.contains(newArenaName)) {
+                        if (setting.arenaExists(newArenaName)) {
                             p.sendMessage(ChatColor.RED + "An arena with this name already exists.");
                             return true;
                         }
@@ -255,17 +285,24 @@ public class ArenaCommand implements TabExecutor {
             if (L == 1) {
 
                 l.add("usage");
-                l.add("wand");
-                l.add("save");
-                l.add("changeName");
-                l.add("delete");
-                l.add("enable");
-                l.add("disable");
-                l.add("info");
-                l.add("pos1");
-                l.add("pos2");
-                l.add("confReload");
-                l.add("reload");
+                if(p.hasPermission("arena.reload"))
+                    l.add("reload");
+                if(p.hasPermission("arena.configs-reload"))
+                    l.add("confReload");
+                if(p.hasPermission("arena.set")){
+                    l.add("wand");
+                    l.add("save");
+                    l.add("changeName");
+                    l.add("delete");
+                    l.add("pos1");
+                    l.add("pos2");
+                }
+                if(p.hasPermission("arena.info"))
+                    l.add("info");
+                if(p.hasPermission("arena.enable")){
+                    l.add("enable");
+                    l.add("disable");
+                }
 
             } else if (L == 2) {
 
@@ -274,17 +311,24 @@ public class ArenaCommand implements TabExecutor {
                 List<String> createdArenas = Setting.getInstance().getCreatedArenas();
 
                 switch (A1) {
-                    case "changename", "delete", "info" -> l.addAll(createdArenas);
-                    case "enable" -> {
-                        for (String arena : createdArenas) {
-                            if (!Setting.getInstance().getConfig().getBoolean(ConstantPaths.ARENA_SETTING + arena + ConstantPaths.ARENA_ENABLED))
-                                l.add(arena);
+                    case "changename", "delete", "info", "chn", "del", "i" -> {
+                        if(p.hasPermission("arena.info") || p.hasPermission("arena.set"))
+                            l.addAll(createdArenas);
+                    }
+                    case "enable", "en" -> {
+                        if(p.hasPermission("arena.enable")) {
+                            for (String arena : createdArenas) {
+                                if (!Setting.getInstance().getConfig().getBoolean(ConstantPaths.ARENA_SETTING + arena + ConstantPaths.ARENA_ENABLED))
+                                    l.add(arena);
+                            }
                         }
                     }
-                    case "disable" -> {
-                        for (String arena : createdArenas) {
-                            if (Setting.getInstance().getConfig().getBoolean(ConstantPaths.ARENA_SETTING + arena + ConstantPaths.ARENA_ENABLED))
-                                l.add(arena);
+                    case "disable", "dis" -> {
+                        if(p.hasPermission("arena.enable")) {
+                            for (String arena : createdArenas) {
+                                if (Setting.getInstance().getConfig().getBoolean(ConstantPaths.ARENA_SETTING + arena + ConstantPaths.ARENA_ENABLED))
+                                    l.add(arena);
+                            }
                         }
                     }
                 }
@@ -303,22 +347,38 @@ public class ArenaCommand implements TabExecutor {
         p.sendMessage(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "Arena command usages:");
 
         um.sendUsageOfCommand("/arena usage", "shows this list.", p);
-        um.sendUsageOfCommand("/arena", "shows the arena you are currently in.", p);
-        um.sendUsageOfCommand("/arena wand", "gives the tool to select regions for the arenas.", p);
-        um.sendUsageOfCommand("/arena save <arenaName>", "saves an arena as the selected region.", p);
-        um.sendUsageOfCommand("/arena changeName <oldArenaName> <newArenaName>", "changes the name of an arena.", p);
-        um.sendUsageOfCommand("/arena delete <arenaName>", "deletes an arena.", p);
-        um.sendUsageOfCommand("/arena enable", "enables the enter/exit arena check.", p);
-        um.sendUsageOfCommand("/arena disable", "disables the enter/exit arena check.", p);
-        um.sendUsageOfCommand("/arena enable <arenaName>", "enables a certain arena.", p);
-        um.sendUsageOfCommand("/arena disable <arenaName>", "disables a certain arena.", p);
-        um.sendUsageOfCommand("/arena info", "shows some info of all arenas.", p);
-        um.sendUsageOfCommand("/arena info <arenaName>", "shows some info of a certain arena.", p);
-        um.sendUsageOfCommand("/arena pos1", "sets pos1 to your current location.", p);
-        um.sendUsageOfCommand("/arena pos2", "sets pos2 to your current location.", p);
-        um.sendUsageOfCommand("/arena confReload", "reloads all configs.", p);
-        um.sendUsageOfCommand("/arena reload", "reloads the plugin.", p);
+
+        if(p.hasPermission("arena.which"))
+            um.sendUsageOfCommand("/arena", "shows the arena you are currently in.", p);
+        if(p.hasPermission("arena.set")){
+            um.sendUsageOfCommand("/arena wand", "gives the tool to select regions for the arenas.", p);
+            um.sendUsageOfCommand("/arena save <arenaName>", "saves an arena as the selected region.", p);
+            um.sendUsageOfCommand("/arena changeName <oldArenaName> <newArenaName>", "changes the name of an arena.", p);
+            um.sendUsageOfCommand("/arena delete <arenaName>", "deletes an arena.", p);
+            um.sendUsageOfCommand("/arena pos1", "sets pos1 to your current location.", p);
+            um.sendUsageOfCommand("/arena pos2", "sets pos2 to your current location.", p);
+        }
+        if(p.hasPermission("arena.enable")){
+            um.sendUsageOfCommand("/arena enable", "enables the enter/exit arena check.", p);
+            um.sendUsageOfCommand("/arena disable", "disables the enter/exit arena check.", p);
+            um.sendUsageOfCommand("/arena enable <arenaName>", "enables a certain arena.", p);
+            um.sendUsageOfCommand("/arena disable <arenaName>", "disables a certain arena.", p);
+        }
+        if(p.hasPermission("arena.info")){
+            um.sendUsageOfCommand("/arena info", "shows some info of all arenas.", p);
+            um.sendUsageOfCommand("/arena info <arenaName>", "shows some info of a certain arena.", p);
+        }
+        if(p.hasPermission("arena.reload"))
+            um.sendUsageOfCommand("/arena reload", "reloads the plugin.", p);
+        if(p.hasPermission("arena.configs-reload"))
+            um.sendUsageOfCommand("/arena confReload", "reloads all configs.", p);
+
 
         p.sendMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+    }
+
+    private boolean hasNoPerm(Player p){
+        return !p.hasPermission("arena-set") && !p.hasPermission("arena-enable") && !p.hasPermission("arena-info")
+                && !p.hasPermission("arena-which") && !p.hasPermission("arena-configs-reload") && !p.hasPermission("arena-reload");
     }
 }

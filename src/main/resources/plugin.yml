@@ -9,8 +9,16 @@ commands:
     description: create and manage PVP arenas around the world
     usage: /arena
     aliases: arn
-  fly:
-    description: temp fly command
 permissions:
   arena.set:
     description: allows a player to create and manage arenas
+  arena.enable:
+    description: allows a player to enable or disable arenas and the arena join/leave check
+  arena.info:
+    description: allows a player to see the info about all arenas
+  arena.which:
+    description: allows a player to know in which arena they're in (/arena)
+  arena.configs-reload:
+    description: allows a player to reload all the configs of this plugin (/arena confReload)
+  arena.reload:
+    description: allows a player to reload this plugin (/arena reload)

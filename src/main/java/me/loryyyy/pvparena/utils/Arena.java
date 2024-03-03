@@ -2,6 +2,7 @@ package me.loryyyy.pvparena.utils;
 
 import lombok.Getter;
 import lombok.Setter;
+import me.loryyyy.pvparena.PVPArena;
 import me.loryyyy.pvparena.files.Messages;
 import me.loryyyy.pvparena.files.Setting;
 import org.bukkit.Bukkit;
@@ -31,7 +32,10 @@ public class Arena extends Region {
     }
 
     public void onJoin(Player p){
-        String message = Messages.getInstance().getMessage("on-arena-join");
+
+        if(!PVPArena.getInstance().getConfig().getBoolean(ConstantPaths.JOIN_MESSAGE_ENABLED)) return;
+
+        String message = Messages.getInstance().getMessage(ConstantPaths.ARENA_JOIN_MESSAGE);
         message = message.replace("<player>", p.getName()).replace("<arena>", this.getName());
         for(Player pl : Bukkit.getOnlinePlayers()){
             pl.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
@@ -39,7 +43,22 @@ public class Arena extends Region {
     }
 
     public void onLeave(Player p){
-        String message = Messages.getInstance().getMessage("on-arena-leave").replace("<player>", p.getName()).replace("<arena>", this.getName());
+
+        if(!PVPArena.getInstance().getConfig().getBoolean(ConstantPaths.LEAVE_MESSAGE_ENABLED)) return;
+
+        String message = Messages.getInstance().getMessage(ConstantPaths.ARENA_LEAVE_MESSAGE);
+        message = message.replace("<player>", p.getName()).replace("<arena>", this.getName());
+        for(Player pl : Bukkit.getOnlinePlayers()){
+            pl.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+        }
+    }
+
+    public void onDeath(Player victim, Player killer){
+
+        if(!PVPArena.getInstance().getConfig().getBoolean(ConstantPaths.DEATH_MESSAGE_ENABLED)) return;
+
+        String message = Messages.getInstance().getMessage(ConstantPaths.ARENA_DEATH_MESSAGE);
+        message = message.replace("<victim>", victim.getName()).replace("<killer>", killer.getName());
         for(Player pl : Bukkit.getOnlinePlayers()){
             pl.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
         }

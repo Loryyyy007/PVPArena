@@ -117,6 +117,7 @@ public class UM {
         meta.setUnbreakable(true);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
         meta.setDisplayName(displayName);
         meta.setLore(lore == null ? new ArrayList<>() : lore);
         item.setItemMeta(meta);
