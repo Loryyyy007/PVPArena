@@ -153,6 +153,8 @@ public class Region {
         if(config.getBoolean(ConstantPaths.PRECISE_CORNERS)) makeCornersPrecise();
         else centerCorners();
 
+        if(!config.getBoolean(ConstantPaths.REGION_VISIBLE)) return;
+
         if(Listeners.isArenaWand(p.getInventory().getItemInMainHand())) setRegionVisible(true);
         this.externalLocations = getExternalLocations();
         if(regionTask == null){
