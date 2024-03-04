@@ -106,6 +106,12 @@ public class Region {
         corner2.add(x2Inc, y2Inc, z2Inc);
 
     }
+
+    public void centerCorners(){
+        corner1 = corner1.getBlock().getLocation().add(0.5, -0.5, 0.5);
+        corner2 = corner2.getBlock().getLocation().add(0.5, -0.5, 0.5);
+    }
+
     private List<Location> getExternalLocations(){
         List<Location> borderLocations = new ArrayList<>();
 
@@ -145,6 +151,8 @@ public class Region {
             return;
         }
         if(config.getBoolean(ConstantPaths.PRECISE_CORNERS)) makeCornersPrecise();
+        else centerCorners();
+
         if(Listeners.isArenaWand(p.getInventory().getItemInMainHand())) setRegionVisible(true);
         this.externalLocations = getExternalLocations();
         if(regionTask == null){

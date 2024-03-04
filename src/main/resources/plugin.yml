@@ -22,3 +22,4 @@ permissions:
     description: allows a player to reload all the configs of this plugin (/arena confReload)
   arena.reload:
     description: allows a player to reload this plugin (/arena reload)
+  arena.*: equivalent to every permission stated above
