@@ -17,19 +17,36 @@ The possible arguments are the following:
 
   */arena* -> shows the arena you are currently in.  
   */arena wand* -> gives the tool to select regions for the arenas.  
-  */arena save <arenaName>* -> saves an arena as the selected region.  
-  */arena changeName <oldArenaName> <newArenaName>* -> changes the name of an arena.  
-  */arena delete <arenaName>* -> deletes an arena.  
+  */arena save \<arenaName>* -> saves an arena as the selected region.  
+  */arena changeName \<oldArenaName> \<newArenaName>* -> changes the name of an arena.  
+  */arena delete \<arenaName>* -> deletes an arena.  
   */arena pos1* -> sets pos1 to your current location.  
   */arena pos2* -> sets pos2 to your current location.  
+  */arena expand \<amount> (\<direction>)* -> expands the selected region in a certain direction.  
+  */arena reduce \<amount> (\<direction>)* -> reduces the selected region in a certain direction.  
+  */arena move \<amount> (\<direction>)* -> moves the selected region in a certain direction.  
   */arena enable* -> enables the enter/exit arena check.  
   */arena disable* -> disables the enter/exit arena check.  
-  */arena enable <arenaName>* -> enables a certain arena.  
-  */arena disable <arenaName>* -> disables a certain arena.  
+  */arena enable \<arenaName>* -> enables a certain arena.  
+  */arena disable \<arenaName>* -> disables a certain arena.  
   */arena info* -> shows some info of all arenas.  
-  */arena info <arenaName>* -> shows some info of a certain arena.  
+  */arena info \<arenaName>* -> shows some info of a certain arena.  
   */arena reload* -> reloads the plugin. 
   */arena confReload* -> reloads all configs.  
+
+`Arena Wand`
+
+The Arena Wand is a powerful tool that makes setting regions way easier.  
+To get it just use the command /arena wand and it will appear in your inventory.  
+
+The Wand can do 5 different things:
+ - Left-click a block to set the pos1 of the region.  
+ - Right-click a block to set the pos2 of the region.  
+ - Right-click air to expand the region in the direction you are facing by the amount provided in the config.yml.  
+ - Shift+right-click air to reduce the region in the direction you are facing by the amount provided in the config.yml.  
+ - Drop to move the region in the direction you are facing by the amount provided in the config.yml.  
+
+In addition, the region will only be visible if the Arena Wand is held, so keep that in mind.  
 
 `Permissions`
 
@@ -57,6 +74,8 @@ Region:
   Make-corners-precise-on-creation: true  #toggles if regions should have precise corners, that is the most extern part of the block, instead of the center of it.
   Visible: true  #toggles the selected region visibility.
   Visibility-period: 4  #this is the speed in ticks (20th of a second) at which region particles are updated.
+  Moving-amount: 1 #this is the amount of blocks by which the region gets moved when using the Arena Wand.  
+  Expanding-reducing-amount: 1 #this is the amount of blocks by which the region gets expanded or reduced when using the Arena Wand.  
 Task:
   Delay: 10  #this is the delay in ticks (20th of a second) of the arena join/leave task, that is how much time it waits before starting upon activation.
   Period: 10  #this is the speed in ticks (20th of a second) of the arena join/leave task.
