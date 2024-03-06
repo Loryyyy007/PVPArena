@@ -75,14 +75,6 @@ public class UM {
         return df.format(d);
     }
 
-    public String locToString(Location loc, boolean extended){
-
-        if(!extended) return locToString(loc);
-
-        return "x = " + approximate(loc.getX(), 2) + ", y = " + approximate(loc.getY(), 2) + ", z = " + approximate(loc.getZ(), 2) + ", pitch = " +
-                approximate(loc.getPitch(), 2) + ", yaw = " +  approximate(loc.getYaw(), 2) + ", world = " + loc.getWorld().getName();
-
-    }
     public String locToString(Location loc){
 
         return "x = " + approximate(loc.getX(), 2) + ", y = " + approximate(loc.getY(), 2) + ", z = " + approximate(loc.getZ(), 2);
@@ -127,6 +119,9 @@ public class UM {
     }
     public ItemStack createItem(Material material, String displayName, List<String> lore, int amount) {
         return createItem(material, 0, displayName, lore, amount);
+    }
+    public boolean concord(int n1, int n2){
+        return n1 >= 0 && n2 >= 0 || n1 < 0 && n2 < 0;
     }
 
     public ItemStack createItem(Material material, int dur, String displayName, List<String> lore, Inventory inventory, int index, int amount) {

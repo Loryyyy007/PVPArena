@@ -8,6 +8,7 @@ import me.loryyyy.pvparena.managers.ArenaCheckTask;
 import me.loryyyy.pvparena.managers.Listeners;
 import me.loryyyy.pvparena.utils.Arena;
 import me.loryyyy.pvparena.utils.ConstantPaths;
+import me.loryyyy.pvparena.utils.Region;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -54,6 +55,7 @@ public final class PVPArena extends JavaPlugin {
     public void onDisable() {
 
         ArenaCheckTask.getInstance().cancel();
+        for(Region region : ArenaCommand.getSelectedRegions().values()) region.endVisualEffect();
         ArenaCommand.getSelectedRegions().clear();
         ArenaCheckTask.getInstance().getPlayersInArena().clear();
         Arena.getEnabledArenas().clear();

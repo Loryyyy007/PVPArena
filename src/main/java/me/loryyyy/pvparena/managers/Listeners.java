@@ -2,10 +2,7 @@ package me.loryyyy.pvparena.managers;
 
 import me.loryyyy.pvparena.PVPArena;
 import me.loryyyy.pvparena.commands.ArenaCommand;
-import me.loryyyy.pvparena.utils.Arena;
-import me.loryyyy.pvparena.utils.ConstantPaths;
-import me.loryyyy.pvparena.utils.Region;
-import me.loryyyy.pvparena.utils.UM;
+import me.loryyyy.pvparena.utils.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -86,7 +84,7 @@ public class Listeners implements Listener {
     public void onInteract(PlayerInteractEvent e){
         Player p = e.getPlayer();
         Action action = e.getAction();
-        if(action != Action.RIGHT_CLICK_BLOCK && action != Action.LEFT_CLICK_BLOCK) return;
+        if(action == Action.PHYSICAL || action == Action.LEFT_CLICK_AIR) return;
         ItemStack item = p.getInventory().getItemInMainHand();
         if(!isArenaWand(item)) return;
         e.setCancelled(true);
@@ -94,26 +92,43 @@ public class Listeners implements Listener {
         ArenaCommand.getSelectedRegions().putIfAbsent(p, new Region());
         Region region = ArenaCommand.getSelectedRegions().get(p);
 
-        Location blockLoc = e.getClickedBlock().getLocation();
+        if(action == Action.RIGHT_CLICK_AIR){
+            if(p.isSneaking())
+                p.performCommand("arena reduce " + PVPArena.getInstance().getConfig().getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT));
+            else p.performCommand("arena expand " + PVPArena.getInstance().getConfig().getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT));
+        } else {
+            Location blockLoc = e.getClickedBlock().getLocation();
+            String pos;
+            if (action == Action.RIGHT_CLICK_BLOCK) {
+                if (region.getCorner2() != null && blockLoc.equals(region.getCorner2().getBlock().getLocation()))
+                    return;
 
-        String pos;
-        if(action == Action.RIGHT_CLICK_BLOCK){
-            if(region.getCorner2() != null && blockLoc.equals(region.getCorner2().getBlock().getLocation())) return;
+                region.setCorner2(blockLoc);
 
-            region.setCorner2(blockLoc);
+                pos = "Pos2";
+            } else {
+                if (region.getCorner1() != null && blockLoc.equals(region.getCorner1().getBlock().getLocation()))
+                    return;
 
-            pos = "Pos2";
-        }else{
-            if(region.getCorner1() != null && blockLoc.equals(region.getCorner1().getBlock().getLocation())) return;
+                region.setCorner1(blockLoc);
 
-            region.setCorner1(blockLoc);
-
-            pos = "Pos1";
+                pos = "Pos1";
+            }
+            region.updateVisualEffect(p);
+            p.sendMessage(ChatColor.GREEN + pos + " of the region was set to: " + ChatColor.GOLD + UM.getInstance().locToString(blockLoc));
         }
-        region.updateVisualEffect(p);
-        p.sendMessage(ChatColor.GREEN + pos + " of the region was set to: " + ChatColor.GOLD + UM.getInstance().locToString(blockLoc));
-
     }
+
+    @EventHandler
+    public void onDrop(PlayerDropItemEvent e){
+        Player p = e.getPlayer();
+        ItemStack item = e.getItemDrop().getItemStack();
+        if(!isArenaWand(item)) return;
+
+        p.performCommand("arena move " + PVPArena.getInstance().getConfig().getInt(ConstantPaths.MOVING_AMOUNT));
+        e.setCancelled(true);
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent e){
         Player p = e.getPlayer();

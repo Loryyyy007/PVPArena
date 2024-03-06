@@ -1,5 +1,5 @@
 name: PVPArena
-version: '1.0'
+version: '1.1'
 main: me.loryyyy.pvparena.PVPArena
 api-version: '1.20'
 description: a plugin that allows players to create arena in the world where to fight until death.
@@ -22,4 +22,5 @@ permissions:
     description: allows a player to reload all the configs of this plugin (/arena confReload)
   arena.reload:
     description: allows a player to reload this plugin (/arena reload)
-  arena.*: equivalent to every permission stated above
+  arena.*:
+    description: equivalent to every permission stated above

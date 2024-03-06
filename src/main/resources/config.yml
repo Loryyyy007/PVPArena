@@ -6,6 +6,8 @@ Region:
   Make-corners-precise-on-creation: true
   Visible: true
   Visibility-period: 4
+  Moving-amount: 1
+  Expanding-reducing-amount: 1
 Task:
   Delay: 10
   Period: 10

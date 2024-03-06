@@ -5,10 +5,7 @@ import me.loryyyy.pvparena.PVPArena;
 import me.loryyyy.pvparena.files.Messages;
 import me.loryyyy.pvparena.files.Setting;
 import me.loryyyy.pvparena.managers.ArenaCheckTask;
-import me.loryyyy.pvparena.utils.Arena;
-import me.loryyyy.pvparena.utils.ConstantPaths;
-import me.loryyyy.pvparena.utils.Region;
-import me.loryyyy.pvparena.utils.UM;
+import me.loryyyy.pvparena.utils.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -58,14 +55,14 @@ public class ArenaCommand implements TabExecutor {
                     case "wand", "w" -> {
                         if(!hasPerm(p, "arena.set")) return Messages.getInstance().sendNoPermMessage(p);
 
-                        ItemStack wand = UM.getInstance().createItem(Material.IRON_AXE, ChatColor.GOLD + "Arena Wand", Arrays.asList(" ", ChatColor.YELLOW + "Left-click a block to set pos1", ChatColor.YELLOW + "Right-click a block to set pos2"), 1);
+                        ItemStack wand = UM.getInstance().createItem(Material.IRON_AXE, ChatColor.GOLD + "Arena Wand", Arrays.asList(" ",
+                                ChatColor.YELLOW + "Left-click a block to set pos1", ChatColor.YELLOW + "Right-click a block to set pos2", ChatColor.YELLOW + "Drop to move the region",
+                                ChatColor.YELLOW + "Right-click air to expand.", ChatColor.YELLOW + "Shift+Right-click air to reduce."), 1);
                         wand.addEnchantment(Enchantment.DURABILITY, 1);
                         p.getInventory().addItem(wand);
                         p.sendMessage(ChatColor.GOLD + "Arena Wand " + ChatColor.GREEN + "has been added to your inventory.");
                     }
-                    case "usage", "us" -> {
-                        showUsage(p);
-                    }
+                    case "usage", "us" -> showUsage(p);
                     case "reload", "rl" -> {
                         if(!hasPerm(p, "arena.reload")) return Messages.getInstance().sendNoPermMessage(p);
 
@@ -232,6 +229,9 @@ public class ArenaCommand implements TabExecutor {
 
                         p.sendMessage(ChatColor.GREEN + "Arena " + ChatColor.GOLD + arenaName + ChatColor.GREEN + " was enabled.");
                     }
+                    case "expand", "exp" -> p.performCommand("arena expand " + args[1] + " " + CardinalDirection.getDirection(p).name());
+                    case "reduce", "rdc" -> p.performCommand("arena reduce " + args[1] + " " + CardinalDirection.getDirection(p).name());
+                    case "move", "mv" -> p.performCommand("arena move " + args[1] + " " + CardinalDirection.getDirection(p).name());
                     default -> {
                         p.sendMessage(ChatColor.RED + "Unknown argument: " + args[0]);
                         showUsage(p);
@@ -258,6 +258,107 @@ public class ArenaCommand implements TabExecutor {
                         setting.changeArenaName(oldArenaName, newArenaName);
 
                         p.sendMessage(ChatColor.GOLD + oldArenaName + " arena" + ChatColor.GREEN + " was renamed to " + ChatColor.GOLD + newArenaName);
+                    }
+                    case "expand", "exp" -> {
+                        if(!hasPerm(p, "arena.set")) return Messages.getInstance().sendNoPermMessage(p);
+
+                        Region region = selectedRegions.getOrDefault(p, null);
+
+                        if(region == null){
+                            p.sendMessage(ChatColor.GOLD + "You have not selected any region.");
+                            return true;
+                        }
+                        if (region.getCorner1() == null || region.getCorner2() == null) {
+                            p.sendMessage(ChatColor.GOLD + "You have to finish the region selection before expanding it.");
+                            return true;
+                        }
+                        int amount;
+                        try {
+                            amount = Integer.parseInt(args[1]);
+                        }catch (NumberFormatException ex){
+                            p.sendMessage(ChatColor.RED  + "You need to provide a valid amount.");
+                            showUsage(p);
+                            return true;
+                        }
+                        CardinalDirection direction;
+                        try{
+                            direction = CardinalDirection.valueOf(args[2]);
+                        }catch (IllegalArgumentException ex){
+                            p.sendMessage(ChatColor.RED + "Unknown direction: " + args[2]);
+                            return true;
+                        }
+
+                        region.changeSize(direction, amount, true);
+                        region.updateVisualEffect(p);
+
+                        p.sendMessage(ChatColor.GREEN + "The region was expanded by " + ChatColor.GOLD + amount + " blocks " + ChatColor.GREEN + "to " + direction.name());
+                    }
+                    case "reduce", "rdc" -> {
+                        if(!hasPerm(p, "arena.set")) return Messages.getInstance().sendNoPermMessage(p);
+
+                        Region region = selectedRegions.getOrDefault(p, null);
+
+                        if(region == null){
+                            p.sendMessage(ChatColor.GOLD + "You have not selected any region.");
+                            return true;
+                        }
+                        if (region.getCorner1() == null || region.getCorner2() == null) {
+                            p.sendMessage(ChatColor.GOLD + "You have to finish the region selection before reducing it.");
+                            return true;
+                        }
+                        int amount;
+                        try {
+                            amount = Integer.parseInt(args[1]);
+                        }catch (NumberFormatException ex){
+                            p.sendMessage(ChatColor.RED  + "You need to provide a valid amount.");
+                            showUsage(p);
+                            return true;
+                        }
+                        CardinalDirection direction;
+                        try{
+                            direction = CardinalDirection.valueOf(args[2]);
+                        }catch (IllegalArgumentException ex){
+                            p.sendMessage(ChatColor.RED + "Unknown direction: " + args[2]);
+                            return true;
+                        }
+
+                        region.changeSize(direction, amount, false);
+                        region.updateVisualEffect(p);
+
+                        p.sendMessage(ChatColor.GREEN + "The region was reduced by " + ChatColor.GOLD + amount + " blocks " + ChatColor.GREEN + "to " + direction.name());
+                    }case "move", "mv" -> {
+                        if(!hasPerm(p, "arena.set")) return Messages.getInstance().sendNoPermMessage(p);
+
+                        Region region = selectedRegions.getOrDefault(p, null);
+
+                        if(region == null){
+                            p.sendMessage(ChatColor.GOLD + "You have not selected any region.");
+                            return true;
+                        }
+                        if (region.getCorner1() == null || region.getCorner2() == null) {
+                            p.sendMessage(ChatColor.GOLD + "You have to finish the region selection before moving it.");
+                            return true;
+                        }
+                        int amount;
+                        try {
+                            amount = Integer.parseInt(args[1]);
+                        }catch (NumberFormatException ex){
+                            p.sendMessage(ChatColor.RED  + "You need to provide a valid amount.");
+                            showUsage(p);
+                            return true;
+                        }
+
+                        CardinalDirection direction;
+                        try{
+                            direction = CardinalDirection.valueOf(args[2]);
+                        }catch (IllegalArgumentException ex){
+                            p.sendMessage(ChatColor.RED + "Unknown direction: " + args[2]);
+                            return true;
+                        }
+                        region.move(direction, amount);
+                        region.updateVisualEffect(p);
+
+                        p.sendMessage(ChatColor.GREEN + "Region has been moved by " + ChatColor.GOLD + amount + ChatColor.GREEN + " to " + ChatColor.GOLD + direction.name());
                     }
                     default -> {
                         p.sendMessage(ChatColor.RED + "Unknown argument: " + args[0]);
@@ -296,6 +397,9 @@ public class ArenaCommand implements TabExecutor {
                     l.add("delete");
                     l.add("pos1");
                     l.add("pos2");
+                    l.add("move");
+                    l.add("expand");
+                    l.add("reduce");
                 }
                 if(hasPerm(p, "arena.info"))
                     l.add("info");
@@ -330,7 +434,20 @@ public class ArenaCommand implements TabExecutor {
                                     l.add(arena);
                             }
                         }
+                    }case "expand", "exp", "reduce", "rdc" -> l.add(PVPArena.getInstance().getConfig().getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT) + "");
+                    case "move", "mv" -> l.add(PVPArena.getInstance().getConfig().getInt(ConstantPaths.MOVING_AMOUNT) + "");
+                }
+
+            }else if(args.length == 3){
+
+                switch (args[0].toLowerCase()){
+
+                    case "expand", "exp", "move", "mv", "reduce", "rdc" -> {
+                        for(CardinalDirection direction : CardinalDirection.values()){
+                            l.add(direction.name());
+                        }
                     }
+
                 }
 
             }
@@ -357,6 +474,9 @@ public class ArenaCommand implements TabExecutor {
             um.sendUsageOfCommand("/arena delete <arenaName>", "deletes an arena.", p);
             um.sendUsageOfCommand("/arena pos1", "sets pos1 to your current location.", p);
             um.sendUsageOfCommand("/arena pos2", "sets pos2 to your current location.", p);
+            um.sendUsageOfCommand("/arena move <amount> (<direction>)", "moves the region in a certain direction.", p);
+            um.sendUsageOfCommand("/arena expand <amount> (<direction>)", "expands the region in a certain direction.", p);
+            um.sendUsageOfCommand("/arena reduce <amount> (<direction>)", "reduces the region in a certain direction.", p);
         }
         if(hasPerm(p, "arena.enable")){
             um.sendUsageOfCommand("/arena enable", "enables the enter/exit arena check.", p);

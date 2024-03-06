@@ -37,47 +37,6 @@ public class Region {
 
     }
 
-    public ArrayList<Block> getBlocks() {
-
-        if (!blocks.isEmpty()) return blocks;
-
-        for (double x = Math.min(corner1.getBlockX(), corner2.getBlockX()); x <= Math.max(corner1.getBlockX(), corner2.getBlockX()); x++) {
-            for (double y = Math.min(corner1.getBlockY(), corner2.getBlockY()); y <= Math.max(corner1.getBlockY(), corner2.getBlockY()); y++) {
-                for (double z = Math.min(corner1.getBlockZ(), corner2.getBlockZ()); z <= Math.max(corner1.getBlockZ(), corner2.getBlockZ()); z++) {
-
-                    Block block = new Location(corner1.getWorld(), x, y, z).getBlock();
-                    blocks.add(block);
-
-                }
-            }
-        }
-        return blocks;
-
-    }
-
-    public void clear() {
-        for (Block block : getBlocks())
-            block.setType(Material.AIR);
-    }
-
-    public Location getCentre() {
-
-        double x = (corner1.getX() + corner2.getX()) / 2;
-        double y = (corner1.getY() + corner2.getY()) / 2;
-        double z = (corner1.getZ() + corner2.getZ()) / 2;
-
-        return new Location(corner1.getWorld(), x, y, z);
-
-    }
-
-    public double getHeight() {
-        return Math.abs(corner1.getY() - corner2.getY());
-    }
-
-    public float getBottomY() {
-        return Math.min(corner1.getBlockY(), corner2.getBlockY());
-    }
-
     private void makeCornersPrecise() {
 
         if (corner1 == null || corner2 == null) return;
@@ -175,5 +134,79 @@ public class Region {
         this.regionTask.cancel();
         this.regionTask = null;
     }
+
+    public void move(CardinalDirection face, int amount){
+
+        int xInc = 0;
+        int yInc = 0;
+        int zInc = 0;
+
+        String name = face.name();
+
+        if(face == CardinalDirection.UP){
+            yInc = amount;
+        } else if (face == CardinalDirection.DOWN) {
+            yInc = -amount;
+        }else {
+            if (name.contains("NORTH")) {
+                zInc = -amount;
+            }
+            if (name.contains("SOUTH")) {
+                zInc = amount;
+            }
+            if (name.contains("EAST")) {
+                xInc = amount;
+            }
+            if (name.contains("WEST")) {
+                xInc = -amount;
+            }
+        }
+
+        corner1.add(xInc, yInc, zInc);
+        corner2.add(xInc, yInc, zInc);
+
+    }
+    public void changeSize(CardinalDirection face, int amount, boolean expand){
+
+        int xInc = 0;
+        int yInc = 0;
+        int zInc = 0;
+
+        String name = face.name();
+
+        if(face == CardinalDirection.UP){
+            yInc = amount;
+        } else if (face == CardinalDirection.DOWN) {
+            yInc = -amount;
+        }else {
+            if (name.contains("NORTH")) {
+                zInc = -amount;
+            }
+            if (name.contains("SOUTH")) {
+                zInc = amount;
+            }
+            if (name.contains("EAST")) {
+                xInc = amount;
+            }
+            if (name.contains("WEST")) {
+                xInc = -amount;
+            }
+        }
+
+        int deltaX = (int) (corner1.getX()-corner2.getX());
+        int deltaY = (int) (corner1.getY()-corner2.getY());
+        int deltaZ = (int) (corner1.getZ()-corner2.getZ());
+        UM um = UM.getInstance();
+
+        Location c1 = expand ? corner1 : corner2;
+        Location c2 = expand ? corner2 : corner1;
+
+        c1.add(um.concord(deltaX, xInc) ? xInc : 0, um.concord(deltaY, yInc) ? yInc : 0, um.concord(deltaZ, zInc) ? zInc : 0);
+        c2.add(!um.concord(deltaX, xInc) ? xInc : 0, !um.concord(deltaY, yInc) ? yInc : 0, !um.concord(deltaZ, zInc) ? zInc : 0);
+
+
+    }
+
+
 
 }
