@@ -77,7 +77,7 @@ Region:
   Moving-amount: 1  #this is the amount of blocks by which the region gets moved when using the Arena Wand.  
   Expanding-reducing-amount: 1  #this is the amount of blocks by which the region gets expanded or reduced when using the Arena Wand.
   Particle: null  #this is the particle that will make up the selected region. If an unvalid particle is provided, this will just be VILLAGER_HAPPY
-  Particle-max-amount  #this is the maximum amount of particles that will be displayed for the region. If this limit is exceeded no particle will be displayed.
+  Particle-max-amount: 15000  #this is the maximum amount of particles that will be displayed for the region. If this limit is exceeded no particle will be displayed.
 Task:
   Delay: 10  #this is the delay in ticks (20th of a second) of the arena join/leave task, that is how much time it waits before starting upon activation.
   Period: 10  #this is the speed in ticks (20th of a second) of the arena join/leave task.
