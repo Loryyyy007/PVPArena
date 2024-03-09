@@ -118,7 +118,7 @@ public class Region {
         if(Listeners.isArenaWand(p.getInventory().getItemInMainHand())) setRegionVisible(true);
         this.externalLocations = getExternalLocations();
         try {
-            this.particle = Particle.valueOf(PVPArena.getInstance().getConfig().getString(ConstantPaths.REGION_PARTICLE).toUpperCase());
+            this.particle = Particle.valueOf(config.getString(ConstantPaths.REGION_PARTICLE).toUpperCase());
         }catch (IllegalArgumentException | NullPointerException ex){
             this.particle = Particle.VILLAGER_HAPPY;
         }
@@ -128,7 +128,7 @@ public class Region {
                 @Override
                 public void run() {
                     if(!Region.this.isRegionVisible()) return;
-                    if(Region.this.externalLocations.size() > 10000) return;
+                    if(Region.this.externalLocations.size() > config.getInt(ConstantPaths.REGION_PARTICLE_AMOUNT)) return;
 
                     for(Location location : Region.this.externalLocations){
                         p.spawnParticle(Region.this.particle, location, 1);

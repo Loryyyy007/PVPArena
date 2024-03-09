@@ -379,6 +379,7 @@ public class ArenaCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String s, String[] args) {
         ArrayList<String> l = new ArrayList<>();
+        FileConfiguration config = PVPArena.getInstance().getConfig();
 
         if (sender instanceof Player p) {
             final int L = args.length;
@@ -434,11 +435,11 @@ public class ArenaCommand implements TabExecutor {
                                     l.add(arena);
                             }
                         }
-                    }case "expand", "exp", "reduce", "rdc" -> l.add(PVPArena.getInstance().getConfig().getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT) + "");
-                    case "move", "mv" -> l.add(PVPArena.getInstance().getConfig().getInt(ConstantPaths.MOVING_AMOUNT) + "");
+                    }case "expand", "exp", "reduce", "rdc" -> l.add(config.getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT) + "");
+                    case "move", "mv" -> l.add(config.getInt(ConstantPaths.MOVING_AMOUNT) + "");
                 }
 
-            }else if(args.length == 3){
+            }else if(L == 3){
 
                 switch (args[0].toLowerCase()){
 

@@ -7,6 +7,7 @@ import me.loryyyy.pvparena.utils.Arena;
 import me.loryyyy.pvparena.utils.ConstantPaths;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -32,8 +33,9 @@ public class ArenaCheckTask {
 
     public void start() {
 
-        final int PERIOD = PVPArena.getInstance().getConfig().getInt(ConstantPaths.ARENA_TASK_PERIOD);
-        final int DELAY = PVPArena.getInstance().getConfig().getInt(ConstantPaths.ARENA_TASK_DELAY);
+        FileConfiguration config = PVPArena.getInstance().getConfig();
+        final int PERIOD = config.getInt(ConstantPaths.ARENA_TASK_PERIOD);
+        final int DELAY = config.getInt(ConstantPaths.ARENA_TASK_DELAY);
 
         task = new BukkitRunnable() {
             @Override

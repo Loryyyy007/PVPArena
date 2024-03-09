@@ -9,6 +9,7 @@ Region:
   Moving-amount: 1
   Expanding-reducing-amount: 1
   Particle: VILLAGER_HAPPY
+  Particle-max-amount: 10000
 Task:
   Delay: 10
   Period: 10

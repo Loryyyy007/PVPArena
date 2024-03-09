@@ -83,6 +83,7 @@ public class Listeners implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent e){
         Player p = e.getPlayer();
+        FileConfiguration config = PVPArena.getInstance().getConfig();
         Action action = e.getAction();
         if(action == Action.PHYSICAL || action == Action.LEFT_CLICK_AIR) return;
         ItemStack item = p.getInventory().getItemInMainHand();
@@ -94,8 +95,8 @@ public class Listeners implements Listener {
 
         if(action == Action.RIGHT_CLICK_AIR){
             if(p.isSneaking())
-                p.performCommand("arena reduce " + PVPArena.getInstance().getConfig().getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT));
-            else p.performCommand("arena expand " + PVPArena.getInstance().getConfig().getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT));
+                p.performCommand("arena reduce " + config.getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT));
+            else p.performCommand("arena expand " + config.getInt(ConstantPaths.EXPANDING_REDUCING_AMOUNT));
         } else {
             Location blockLoc = e.getClickedBlock().getLocation();
             String pos;
