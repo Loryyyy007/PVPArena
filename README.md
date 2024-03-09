@@ -74,8 +74,10 @@ Region:
   Make-corners-precise-on-creation: true  #toggles if regions should have precise corners, that is the most extern part of the block, instead of the center of it.
   Visible: true  #toggles the selected region visibility.
   Visibility-period: 4  #this is the speed in ticks (20th of a second) at which region particles are updated.
-  Moving-amount: 1 #this is the amount of blocks by which the region gets moved when using the Arena Wand.  
-  Expanding-reducing-amount: 1 #this is the amount of blocks by which the region gets expanded or reduced when using the Arena Wand.  
+  Moving-amount: 1  #this is the amount of blocks by which the region gets moved when using the Arena Wand.  
+  Expanding-reducing-amount: 1  #this is the amount of blocks by which the region gets expanded or reduced when using the Arena Wand.
+  Particle: null  #this is the particle that will make up the selected region. If an unvalid particle is provided, this will just be VILLAGER_HAPPY
+  Particle-max-amount  #this is the maximum amount of particles that will be displayed for the region. If this limit is exceeded no particle will be displayed.
 Task:
   Delay: 10  #this is the delay in ticks (20th of a second) of the arena join/leave task, that is how much time it waits before starting upon activation.
   Period: 10  #this is the speed in ticks (20th of a second) of the arena join/leave task.
