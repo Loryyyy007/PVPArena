@@ -14,6 +14,7 @@ public class ConstantPaths {
     public static final String REGION_VISIBILITY_PERIOD = "Region.Visibility-period";
     public static final String MOVING_AMOUNT = "Region.Moving-amount";
     public static final String EXPANDING_REDUCING_AMOUNT = "Region.Expanding-reducing-amount";
+    public static final String REGION_PARTICLE = "Region.Particle";
     public static final String JOIN_MESSAGE_ENABLED = "Messages.Join-arena";
     public static final String LEAVE_MESSAGE_ENABLED = "Messages.Leave-arena";
     public static final String DEATH_MESSAGE_ENABLED = "Messages.Death-in-arena";

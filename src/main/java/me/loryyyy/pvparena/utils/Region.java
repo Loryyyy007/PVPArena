@@ -25,6 +25,7 @@ public class Region {
     private BukkitTask regionTask = null;
     private List<Location> externalLocations = null;
     private boolean regionVisible = false;
+    private Particle particle = null;
 
     public boolean contains(Location loc) {
 
@@ -116,13 +117,21 @@ public class Region {
 
         if(Listeners.isArenaWand(p.getInventory().getItemInMainHand())) setRegionVisible(true);
         this.externalLocations = getExternalLocations();
+        try {
+            this.particle = Particle.valueOf(PVPArena.getInstance().getConfig().getString(ConstantPaths.REGION_PARTICLE).toUpperCase());
+        }catch (IllegalArgumentException | NullPointerException ex){
+            this.particle = Particle.VILLAGER_HAPPY;
+        }
         if(regionTask == null){
+
             this.regionTask = new BukkitRunnable(){
                 @Override
                 public void run() {
                     if(!Region.this.isRegionVisible()) return;
+                    if(Region.this.externalLocations.size() > 10000) return;
+
                     for(Location location : Region.this.externalLocations){
-                        p.spawnParticle(Particle.VILLAGER_HAPPY, location, 1);
+                        p.spawnParticle(Region.this.particle, location, 1);
                     }
                 }
             }.runTaskTimer(PVPArena.getInstance(), 0, config.getInt(ConstantPaths.REGION_VISIBILITY_PERIOD));

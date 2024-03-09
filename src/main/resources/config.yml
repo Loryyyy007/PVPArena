@@ -8,6 +8,7 @@ Region:
   Visibility-period: 4
   Moving-amount: 1
   Expanding-reducing-amount: 1
+  Particle: VILLAGER_HAPPY
 Task:
   Delay: 10
   Period: 10
