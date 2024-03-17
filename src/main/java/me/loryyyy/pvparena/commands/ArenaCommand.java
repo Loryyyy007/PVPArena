@@ -35,6 +35,7 @@ public class ArenaCommand implements TabExecutor {
             Setting setting = Setting.getInstance();
             FileConfiguration setConfig = setting.getConfig();
             FileConfiguration config = PVPArena.getInstance().getConfig();
+            System.out.println("test");
 
             if (L == 0) {
 
